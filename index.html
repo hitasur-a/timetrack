@@ -1,0 +1,1389 @@
+.add-task {
+                flex-direction: column;
+            }<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Time Tracker</title>
+    
+    <!-- PWA対応 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TimeTracker">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#333333">
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9IiMzMzMzMzMiLz4KPGNpcmNsZSBjeD0iOTAiIGN5PSI5MCIgcj0iNTAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iOCIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNOTAgNTBWOTBMMTIwIDExMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+">
+    
+    <!-- PWA Manifest -->
+    <script>
+        // インラインmanifest
+        const manifest = {
+            "name": "Team Time Tracker",
+            "short_name": "TimeTracker",
+            "description": "チームの時間管理ツール",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#333333",
+            "orientation": "any",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDgiIGZpbGw9IiMzMzMzMzMiLz4KPGNpcmNsZSBjeD0iOTYiIGN5PSI5NiIgcj0iNTYiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iOCIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNOTYgNTBWOTZMMTMwIDEyMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml"
+                },
+                {
+                    "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTI4IiBmaWxsPSIjMzMzMzMzIi8+CjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTUwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik0yNTYgMTMwVjI1NkwzNDAgMzIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+",
+                    "sizes": "512x512",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
+        
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #FB6103;
+            --primary-dark: #E55502;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                border-radius: 0;
+            }
+            
+            h1 {
+                font-size: 18px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .clock {
+                font-size: 16px;
+            }
+            
+            .time-info {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .time-card .value {
+                font-size: 20px;
+            }
+            
+            @media (max-width: 768px) {
+                .stats-tabs {
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    -webkit-overflow-scrolling: touch;
+                }
+                
+                .stats-tab {
+                    font-size: 13px;
+                    padding: 6px 12px;
+                }
+            }
+            
+            input[type="text"] {
+                width: 100%;
+            }
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .clock {
+            font-family: monospace;
+            font-size: 20px;
+            color: #666;
+        }
+        
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-left: 20px;
+        }
+        
+        .connection-status.connected {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .connection-status.disconnected {
+            background: #ffebe9;
+            color: #d73027;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .stats-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .stats-tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .stats-tab:hover {
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .stats-tab.active {
+            color: #333;
+            border-bottom-color: #333;
+            font-weight: 600;
+        }
+        
+        .time-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .time-card {
+            text-align: center;
+        }
+        
+        .time-card .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .time-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .add-task {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: end;
+        }
+        
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+        }
+        
+        input[type="number"] {
+            width: 100px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #000;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .task-list {
+            margin-top: 20px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .task-item.running {
+            border-color: #FB6103;
+            background: #FFF5F0;
+        }
+        
+        .task-item.completed {
+            opacity: 0.6;
+            background: #e8f5e9;
+            border-color: #10b981;
+        }
+        
+        .task-item.running::after {
+            content: '実行中';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 11px;
+            color: #FB6103;
+            font-weight: bold;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .task-item.completed::after {
+            content: '完了';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 11px;
+            color: #10b981;
+            font-weight: bold;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .assignee-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .assignee-badge.cow {
+            background: #00BFA5;
+        }
+        
+        .assignee-badge.uta {
+            background: #7C4DFF;
+        }
+        
+        .assignee-badge.unassigned {
+            background: #9E9E9E;
+        }
+        
+        .task-item.running.cow {
+            border-color: #00BFA5;
+            background: #E0F2F1;
+        }
+        
+        .task-item.running.uta {
+            border-color: #7C4DFF;
+            background: #EDE7F6;
+        }
+        
+        .task-item.running.unassigned {
+            border-color: #9E9E9E;
+            background: #F5F5F5;
+        }
+        
+        .task-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .assignee-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .assignee-btn {
+            padding: 5px 10px;
+            border: 2px solid #ddd;
+            background: white;
+            color: #666;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .assignee-btn:hover {
+            border-color: #FB6103;
+            color: #FB6103;
+        }
+        
+        .assignee-btn.selected {
+            background: #FB6103;
+            color: white;
+            border-color: #FB6103;
+        }
+        
+        .task-times {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .estimate {
+            color: #6c757d;
+        }
+        
+        .actual {
+            color: #28a745;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 16px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            background: #f5f5f5;
+            color: #444;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .icon-btn:hover {
+            background: #333;
+            color: white;
+            border-color: #333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .icon-btn.play:hover {
+            background: #10b981;
+            border-color: #10b981;
+        }
+        
+        .icon-btn.pause {
+            background: #333;
+            color: white;
+            border-color: #333;
+        }
+        
+        .icon-btn.pause:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        
+        .icon-btn.has-memo {
+            background: #333;
+            color: white;
+            border-color: #333;
+        }
+        
+        .icon-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .icon-btn:disabled:hover {
+            background: #f5f5f5;
+            color: #444;
+            border-color: #e0e0e0;
+            box-shadow: none;
+        }
+        
+        @media (max-width: 768px) {
+            .task-item {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .assignee-buttons {
+                order: 3;
+                width: 100%;
+            }
+            
+            .task-times {
+                order: 2;
+                width: 100%;
+                font-size: 13px;
+            }
+            
+            .action-buttons {
+                order: 4;
+                width: 100%;
+                justify-content: space-around;
+            }
+        }
+        
+        .diff {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        
+        .diff.over {
+            background: #ffebe9;
+            color: #d73027;
+        }
+        
+        .diff.under {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .setup-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+        
+        .setup-notice h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .setup-notice ol {
+            margin-left: 20px;
+            font-size: 14px;
+        }
+        
+        .setup-notice code {
+            background: #fff;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .memo-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .memo-modal.show {
+            display: flex;
+        }
+        
+        .memo-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .memo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .memo-header h3 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        
+        .memo-history {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .memo-entry {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .memo-entry:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .memo-entry-header {
+            font-weight: 600;
+            color: #FB6103;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .memo-entry-text {
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .memo-input {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .memo-empty {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+        
+        .memo-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .has-memo {
+            position: relative;
+        }
+        
+        .task-name, .estimate {
+            cursor: pointer;
+        }
+        
+        .task-name:hover, .estimate:hover {
+            background: #f0f0f0;
+            border-radius: 4px;
+            padding: 0 4px;
+            margin: 0 -4px;
+        }
+        
+        .task-name-input, .task-estimate-input {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .task-name-input {
+            width: 200px;
+        }
+        
+        .task-estimate-input {
+            width: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span>
+                📊 Team Time Tracker
+                <span class="connection-status disconnected" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span id="connection-text">未接続</span>
+                </span>
+                <span style="margin-left: 20px; font-size: 14px; color: #666;">
+                    ログイン: <strong id="current-user">-</strong>
+                </span>
+            </span>
+            <span class="clock" id="clock">--:--:--</span>
+        </h1>
+        
+        <div class="setup-notice" id="setup-notice">
+            <h3>🔧 Firebase設定が必要です</h3>
+            <ol>
+                <li><a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a>でプロジェクトを作成</li>
+                <li>Realtime Databaseを有効化（テストモードで開始）</li>
+                <li>プロジェクト設定 → 全般 → マイアプリ → Webアプリを追加</li>
+                <li>設定情報をコピーして、このHTMLファイルの<code>firebaseConfig</code>部分に貼り付け</li>
+            </ol>
+        </div>
+        
+        <div class="stats-tabs">
+            <button class="stats-tab active" onclick="switchStatsTab('全体')">全体</button>
+            <button class="stats-tab" onclick="switchStatsTab('cow')">cow</button>
+            <button class="stats-tab" onclick="switchStatsTab('uta')">uta</button>
+            <button class="stats-tab" onclick="switchStatsTab('未定')">未定</button>
+        </div>
+        
+        <div class="time-info">
+            <div class="time-card">
+                <div class="label">今日の残り時間</div>
+                <div class="value" id="remaining-time">--:--:--</div>
+            </div>
+            <div class="time-card">
+                <div class="label">見積合計</div>
+                <div class="value" id="total-estimate">0分</div>
+            </div>
+            <div class="time-card">
+                <div class="label">実績合計</div>
+                <div class="value" id="total-actual">0分</div>
+            </div>
+            <div class="time-card">
+                <div class="label">進行中タスク</div>
+                <div class="value" id="active-tasks">0</div>
+            </div>
+        </div>
+        
+        <div class="add-task">
+            <input type="text" id="task-name" placeholder="タスク名を入力" style="flex: 1;">
+            <input type="number" id="task-estimate" placeholder="見積(分)" min="1" value="30">
+            <button onclick="addTask()">タスク追加</button>
+        </div>
+        
+        <div class="task-list" id="task-list"></div>
+    </div>
+
+    <!-- メモモーダル -->
+    <div class="memo-modal" id="memo-modal">
+        <div class="memo-content">
+            <div class="memo-header">
+                <h3>メモ: <span id="memo-task-name"></span></h3>
+                <button class="close-btn" onclick="closeMemo()">×</button>
+            </div>
+            <div class="memo-history" id="memo-history">
+                <div class="memo-empty">まだメモがありません</div>
+            </div>
+            <textarea 
+                id="memo-input" 
+                class="memo-input" 
+                placeholder="新しいメモを入力してください..."
+            ></textarea>
+            <div class="memo-actions">
+                <button onclick="closeMemo()">閉じる</button>
+                <button onclick="addMemo()">メモを追加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // ==========================================
+        // Firebase設定
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAohR84modVeyYyHFwrnSXGLCbUsYZlY0g",
+            authDomain: "team-time-tracker-69614.firebaseapp.com",
+            databaseURL: "https://team-time-tracker-69614-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "team-time-tracker-69614",
+            storageBucket: "team-time-tracker-69614.firebasestorage.app",
+            messagingSenderId: "753382969035",
+            appId: "1:753382969035:web:d7d9e52f51a3f038d8954e"
+        };
+        
+        // グローバル変数
+        let database;
+        let tasksRef;
+        let isFirebaseConnected = false;
+        let tasks = [];
+        let timerIntervals = {};
+        let currentMemoTaskId = null;
+        let currentUser = localStorage.getItem('timeTrackerUser');
+        let editingFields = {}; // 複数の編集状態を管理
+        let currentStatsTab = '全体'; // 統計タブの状態
+        
+        // ユーザー識別
+        if (!currentUser) {
+            currentUser = prompt('あなたの名前を入力してください（cow または uta）:');
+            if (currentUser !== 'cow' && currentUser !== 'uta') {
+                currentUser = 'cow';
+            }
+            localStorage.setItem('timeTrackerUser', currentUser);
+        }
+        
+        // Firebaseの初期化
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            tasksRef = database.ref('tasks');
+            
+            database.ref('.info/connected').on('value', (snapshot) => {
+                isFirebaseConnected = snapshot.val() === true;
+                updateConnectionStatus(isFirebaseConnected);
+                if (isFirebaseConnected) {
+                    document.getElementById('setup-notice').style.display = 'none';
+                }
+            });
+            
+            tasksRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    tasks = Object.keys(data).map(key => ({...data[key], id: key}));
+                } else {
+                    tasks = [];
+                }
+                renderTasks();
+                updateTotals();
+            });
+            
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+        }
+
+        // ==========================================
+        // 関数定義
+        // ==========================================
+        
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connection-status');
+            const textEl = document.getElementById('connection-text');
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                textEl.textContent = 'リアルタイム同期中';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                textEl.textContent = '未接続';
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+            
+            const endOfDay = new Date(now);
+            endOfDay.setHours(23, 59, 59, 999);
+            const remainingMs = endOfDay - now;
+            const rh = Math.floor(remainingMs / (1000 * 60 * 60));
+            const rm = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+            const rs = Math.floor((remainingMs % (1000 * 60)) / 1000);
+            document.getElementById('remaining-time').textContent = 
+                `${rh}:${String(rm).padStart(2, '0')}:${String(rs).padStart(2, '0')}`;
+        }
+
+        function formatMinutesToTime(minutes) {
+            if (minutes < 60) {
+                return `${minutes}分`;
+            }
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return mins > 0 ? `${hours}時間${mins}分` : `${hours}時間`;
+        }
+
+        function switchStatsTab(tab) {
+            currentStatsTab = tab;
+            updateTotals();
+            
+            // タブのアクティブ状態を更新
+            document.querySelectorAll('.stats-tab').forEach(el => {
+                el.classList.toggle('active', el.textContent === tab);
+            });
+        }
+
+        function updateTotals() {
+            let totalEstimate = 0;
+            let totalActual = 0;
+            let activeTasks = 0;
+            
+            tasks.forEach(task => {
+                // 現在のタブに応じてフィルタリング
+                if (currentStatsTab === '全体' || 
+                    (currentStatsTab === '未定' && (!task.assignee || task.assignee === '未定')) ||
+                    task.assignee === currentStatsTab) {
+                    
+                    totalEstimate += task.estimate || 0;
+                    totalActual += task.actualSeconds || 0;
+                    if (task.isRunning) activeTasks++;
+                }
+            });
+            
+            // 分単位から適切な表示形式に変換
+            document.getElementById('total-estimate').textContent = formatMinutesToTime(totalEstimate);
+            document.getElementById('total-actual').textContent = formatMinutesToTime(Math.floor(totalActual / 60));
+            document.getElementById('active-tasks').textContent = activeTasks;
+        }
+
+        function addTask() {
+            const name = document.getElementById('task-name').value.trim();
+            const estimate = parseInt(document.getElementById('task-estimate').value);
+            
+            if (!name || !estimate) {
+                alert('タスク名と見積時間を入力してください');
+                return;
+            }
+            
+            const task = {
+                assignee: '',
+                name: name,
+                estimate: estimate,
+                actualSeconds: 0,
+                startTime: null,
+                isRunning: false,
+                isCompleted: false,
+                startedBy: '',
+                memoHistory: [],
+                createdAt: Date.now()
+            };
+            
+            if (isFirebaseConnected) {
+                tasksRef.push(task);
+            } else {
+                task.id = Date.now();
+                tasks.push(task);
+                renderTasks();
+                updateTotals();
+            }
+            
+            document.getElementById('task-name').value = '';
+            document.getElementById('task-estimate').value = '30';
+        }
+
+        function assignTask(taskId, assignee) {
+            if (isFirebaseConnected) {
+                tasksRef.child(taskId).update({ assignee: assignee });
+            } else {
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.assignee = assignee;
+                    renderTasks();
+                }
+            }
+        }
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            
+            if (h > 0) {
+                return `${h}時間${m}分${s}秒`;
+            } else if (m > 0) {
+                return `${m}分${s}秒`;
+            } else {
+                return `${s}秒`;
+            }
+        }
+
+        function toggleTimer(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            if (task.isRunning) {
+                if (task.startedBy && task.startedBy !== currentUser) {
+                    alert(`このタスクは ${task.startedBy} さんが開始したため、${task.startedBy} さんのみが停止できます。`);
+                    return;
+                }
+                
+                if (isFirebaseConnected) {
+                    tasksRef.child(taskId).update({
+                        isRunning: false,
+                        actualSeconds: task.actualSeconds,
+                        startedBy: ''
+                    });
+                } else {
+                    task.isRunning = false;
+                    task.startedBy = '';
+                }
+                
+                if (timerIntervals[taskId]) {
+                    clearInterval(timerIntervals[taskId]);
+                    delete timerIntervals[taskId];
+                }
+            } else {
+                const startTime = Date.now() - (task.actualSeconds * 1000);
+                
+                if (isFirebaseConnected) {
+                    tasksRef.child(taskId).update({
+                        isRunning: true,
+                        startTime: startTime,
+                        startedBy: currentUser
+                    });
+                } else {
+                    task.isRunning = true;
+                    task.startTime = startTime;
+                    task.startedBy = currentUser;
+                }
+                
+                timerIntervals[taskId] = setInterval(() => {
+                    const currentTask = tasks.find(t => t.id === taskId);
+                    if (currentTask && currentTask.isRunning) {
+                        const newSeconds = Math.floor((Date.now() - currentTask.startTime) / 1000);
+                        currentTask.actualSeconds = newSeconds;
+                        
+                        const actualEl = document.querySelector(`#actual-${taskId}`);
+                        if (actualEl) {
+                            actualEl.textContent = formatTime(newSeconds);
+                        }
+                        
+                        if (isFirebaseConnected && newSeconds % 5 === 0) {
+                            tasksRef.child(taskId).update({ actualSeconds: newSeconds });
+                        }
+                    }
+                }, 1000);
+            }
+            
+            if (!isFirebaseConnected) {
+                renderTasks();
+            }
+        }
+
+        function completeTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            if (task.isRunning) {
+                toggleTimer(taskId);
+            }
+            
+            if (isFirebaseConnected) {
+                tasksRef.child(taskId).update({
+                    isCompleted: !task.isCompleted
+                });
+            } else {
+                task.isCompleted = !task.isCompleted;
+                renderTasks();
+            }
+        }
+
+        function deleteTask(taskId) {
+            if (timerIntervals[taskId]) {
+                clearInterval(timerIntervals[taskId]);
+                delete timerIntervals[taskId];
+            }
+            
+            if (isFirebaseConnected) {
+                tasksRef.child(taskId).remove();
+            } else {
+                tasks = tasks.filter(t => t.id !== taskId);
+                renderTasks();
+                updateTotals();
+            }
+        }
+
+        function openMemo(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            currentMemoTaskId = taskId;
+            const modal = document.getElementById('memo-modal');
+            
+            document.getElementById('memo-task-name').textContent = task.name;
+            renderMemoHistory(task.memoHistory || []);
+            document.getElementById('memo-input').value = '';
+            
+            modal.classList.add('show');
+        }
+
+        function closeMemo() {
+            document.getElementById('memo-modal').classList.remove('show');
+            currentMemoTaskId = null;
+        }
+
+        function renderMemoHistory(history) {
+            const historyEl = document.getElementById('memo-history');
+            
+            if (!history || history.length === 0) {
+                historyEl.innerHTML = '<div class="memo-empty">まだメモがありません</div>';
+                return;
+            }
+            
+            historyEl.innerHTML = history.map(entry => `
+                <div class="memo-entry">
+                    <div class="memo-entry-header">${entry.author} (${new Date(entry.timestamp).toLocaleString('ja-JP')})</div>
+                    <div class="memo-entry-text">${escapeHtml(entry.text)}</div>
+                </div>
+            `).join('');
+            
+            historyEl.scrollTop = historyEl.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function addMemo() {
+            if (!currentMemoTaskId) return;
+            
+            const input = document.getElementById('memo-input');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('メモを入力してください');
+                return;
+            }
+            
+            const task = tasks.find(t => t.id === currentMemoTaskId);
+            if (!task) return;
+            
+            if (!task.memoHistory) {
+                task.memoHistory = [];
+            }
+            
+            const newEntry = {
+                author: currentUser,
+                text: text,
+                timestamp: Date.now()
+            };
+            
+            // 即座に画面に反映
+            task.memoHistory.push(newEntry);
+            renderMemoHistory(task.memoHistory);
+            
+            if (isFirebaseConnected) {
+                tasksRef.child(currentMemoTaskId).update({
+                    memoHistory: task.memoHistory
+                });
+            } else {
+                renderTasks();
+            }
+            
+            input.value = '';
+        }
+
+        function startEdit(taskId, field) {
+            const key = `${taskId}-${field}`;
+            editingFields[key] = true;
+            renderTasks();
+            
+            setTimeout(() => {
+                const input = document.getElementById(`edit-${field}-${taskId}`);
+                if (input) {
+                    input.focus();
+                    input.select();
+                }
+            }, 50);
+        }
+        
+        function saveEdit(taskId, field) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const input = document.getElementById(`edit-${field}-${taskId}`);
+            if (!input) return;
+            
+            let value;
+            if (field === 'name') {
+                value = input.value.trim();
+                if (!value) return; // 空の場合は保存しない
+            } else if (field === 'estimate') {
+                value = parseInt(input.value);
+                if (!value || value < 1) return; // 無効な値は保存しない
+            }
+            
+            if (isFirebaseConnected) {
+                tasksRef.child(taskId).update({ [field]: value });
+            } else {
+                task[field] = value;
+                renderTasks();
+            }
+            
+            const key = `${taskId}-${field}`;
+            delete editingFields[key];
+        }
+        
+        function cancelEdit(taskId, field) {
+            const key = `${taskId}-${field}`;
+            delete editingFields[key];
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+            
+            Object.keys(timerIntervals).forEach(taskId => {
+                if (!tasks.find(t => t.id === taskId)) {
+                    clearInterval(timerIntervals[taskId]);
+                    delete timerIntervals[taskId];
+                }
+            });
+            
+            // ソート: 実行中 → 未完了 → 完了
+            const sortedTasks = [...tasks].sort((a, b) => {
+                // 実行中のタスクを最優先
+                if (a.isRunning && !b.isRunning) return -1;
+                if (!a.isRunning && b.isRunning) return 1;
+                
+                // 次に完了状態でソート
+                if (a.isCompleted === b.isCompleted) return 0;
+                return a.isCompleted ? 1 : -1;
+            });
+            
+            sortedTasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                const assigneeClass = task.assignee === 'cow' ? 'cow' : 
+                                    task.assignee === 'uta' ? 'uta' : 'unassigned';
+                taskEl.className = `task-item ${task.isRunning ? 'running ' + assigneeClass : ''} ${task.isCompleted ? 'completed' : ''}`;
+                
+                const diffMinutes = Math.floor((task.actualSeconds || 0) / 60) - task.estimate;
+                const diffClass = diffMinutes > 0 ? 'over' : 'under';
+                const diffText = diffMinutes > 0 ? `+${diffMinutes}分` : `${diffMinutes}分`;
+                
+                const isEditingName = editingFields[`${task.id}-name`];
+                const isEditingEstimate = editingFields[`${task.id}-estimate`];
+                
+                taskEl.innerHTML = `
+                    <div class="assignee-badge ${assigneeClass}">${task.assignee || '?'}</div>
+                    <div class="task-name" ondblclick="startEdit('${task.id}', 'name')">
+                        ${isEditingName ? 
+                            `<input type="text" id="edit-name-${task.id}" class="task-name-input" value="${task.name}" 
+                                    onkeypress="if(event.key==='Enter')saveEdit('${task.id}','name')"
+                                    onkeydown="if(event.key==='Escape')cancelEdit('${task.id}','name')"
+                                    onblur="saveEdit('${task.id}','name')">` : 
+                            task.name
+                        }
+                    </div>
+                    <div class="assignee-buttons">
+                        <button class="assignee-btn ${task.assignee === '未定' ? 'selected' : ''}" 
+                                onclick="assignTask('${task.id}', '未定')"
+                                ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>未定</button>
+                        <button class="assignee-btn ${task.assignee === 'cow' ? 'selected' : ''}" 
+                                onclick="assignTask('${task.id}', 'cow')"
+                                ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>cow</button>
+                        <button class="assignee-btn ${task.assignee === 'uta' ? 'selected' : ''}" 
+                                onclick="assignTask('${task.id}', 'uta')"
+                                ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>uta</button>
+                    </div>
+                    <div class="task-times">
+                        <span class="estimate" ondblclick="startEdit('${task.id}', 'estimate')">
+                            見積: ${isEditingEstimate ? 
+                                `<input type="number" id="edit-estimate-${task.id}" class="task-estimate-input" value="${task.estimate}" min="1"
+                                        onkeypress="if(event.key==='Enter')saveEdit('${task.id}','estimate')"
+                                        onkeydown="if(event.key==='Escape')cancelEdit('${task.id}','estimate')"
+                                        onblur="saveEdit('${task.id}','estimate')">分` : 
+                                `${task.estimate}分`
+                            }
+                        </span>
+                        <span class="actual" id="actual-${task.id}">実績: ${formatTime(task.actualSeconds || 0)}</span>
+                        ${(task.actualSeconds || 0) > 0 ? `<span class="diff ${diffClass}">${diffText}</span>` : ''}
+                    </div>
+                    <div class="action-buttons">
+                        ${!task.isCompleted ? `
+                            <button class="icon-btn ${task.isRunning ? 'pause' : 'play'}" 
+                                onclick="toggleTimer('${task.id}')"
+                                title="${task.isRunning ? '停止' : '開始'}"
+                                ${task.isRunning && task.startedBy && task.startedBy !== currentUser ? 'disabled' : ''}>
+                            ${task.isRunning ? '◼' : '▶'}
+                        </button>
+                    ` : ''}
+                    <button class="icon-btn ${task.memoHistory && task.memoHistory.length > 0 ? 'has-memo' : ''}" 
+                            onclick="openMemo('${task.id}')"
+                            title="メモ">
+                        ✎
+                    </button>
+                    <button class="icon-btn" 
+                            onclick="completeTask('${task.id}')"
+                            title="${task.isCompleted ? '戻す' : '完了'}">
+                        ${task.isCompleted ? '↺' : '✓'}
+                    </button>
+                    <button class="icon-btn" 
+                            onclick="if(confirm('本当に削除しますか？'))deleteTask('${task.id}')"
+                            title="削除">
+                        ×
+                    </button>
+                    </div>
+                `;
+                
+                taskList.appendChild(taskEl);
+                
+                if (task.isRunning && !timerIntervals[task.id]) {
+                    timerIntervals[task.id] = setInterval(() => {
+                        const currentTask = tasks.find(t => t.id === task.id);
+                        if (currentTask && currentTask.isRunning) {
+                            const newSeconds = Math.floor((Date.now() - currentTask.startTime) / 1000);
+                            currentTask.actualSeconds = newSeconds;
+                            
+                            const actualEl = document.querySelector(`#actual-${task.id}`);
+                            if (actualEl) {
+                                actualEl.textContent = `実績: ${formatTime(newSeconds)}`;
+                            }
+                            
+                            // 差分の更新も必要
+                            const diffMinutes = Math.floor(newSeconds / 60) - currentTask.estimate;
+                            const diffClass = diffMinutes > 0 ? 'over' : 'under';
+                            const diffText = diffMinutes > 0 ? `+${diffMinutes}分` : `${diffMinutes}分`;
+                            
+                            // 差分表示の更新（DOM操作を最小限に）
+                            const taskItemEl = actualEl.closest('.task-item');
+                            if (taskItemEl) {
+                                const diffEl = taskItemEl.querySelector('.diff');
+                                if (diffEl || newSeconds > 0) {
+                                    const timesEl = taskItemEl.querySelector('.task-times');
+                                    let diffHtml = `<span class="diff ${diffClass}">${diffText}</span>`;
+                                    if (diffEl) {
+                                        diffEl.className = `diff ${diffClass}`;
+                                        diffEl.textContent = diffText;
+                                    } else if (timesEl) {
+                                        timesEl.insertAdjacentHTML('beforeend', diffHtml);
+                                    }
+                                }
+                            }
+                            
+                            if (isFirebaseConnected && newSeconds % 5 === 0) {
+                                tasksRef.child(task.id).update({ actualSeconds: newSeconds });
+                            }
+                        }
+                    }, 1000);
+                }
+            });
+            
+            updateTotals();
+        }
+
+        // 初期化
+        document.getElementById('current-user').textContent = currentUser;
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // PWAインストールプロンプト
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // 自動プロンプトを防ぐ
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+        
+        // Service Worker登録（オプション：オフライン対応用）
+        if ('serviceWorker' in navigator) {
+            // 簡易的なService Workerをインラインで作成
+            const sw = `
+                self.addEventListener('fetch', function(event) {
+                    event.respondWith(fetch(event.request));
+                });
+            `;
+            const swBlob = new Blob([sw], {type: 'application/javascript'});
+            const swUrl = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swUrl).catch(() => {});
+        }
+        
+        // イベントリスナー
+        document.getElementById('task-name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+        document.getElementById('task-estimate').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+        
+        document.getElementById('memo-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                addMemo();
+            }
+        });
+    </script>
+</body>
+</html>
