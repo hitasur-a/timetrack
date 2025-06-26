@@ -426,12 +426,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
             border-radius: 8px;
             transition: all 0.2s;
             background: #f5f5f5;
             color: #444;
             border: 1px solid #e0e0e0;
+            line-height: 1;
+        }
+        
+        .icon-btn.play, .icon-btn.pause {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+        }
+        
+        .icon-btn.play {
+            padding-left: 3px; /* 再生ボタンの三角を中央に調整 */
         }
         
         .icon-btn:hover {
@@ -477,10 +489,33 @@
             box-shadow: none;
         }
         
+        .icon-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
         @media (max-width: 768px) {
+            .running-popup {
+                bottom: 20px;
+                left: 20px;
+                right: 20px;
+                transform: none;
+                min-width: auto;
+            }
+            
             .task-item {
                 flex-wrap: wrap;
                 gap: 10px;
+            }
+            
+            .assignee-badge {
+                order: 1;
+            }
+            
+            .task-name {
+                order: 2;
+                flex: 1;
+                min-width: calc(100% - 60px);
             }
             
             .assignee-buttons {
@@ -489,13 +524,13 @@
             }
             
             .task-times {
-                order: 2;
+                order: 4;
                 width: 100%;
                 font-size: 13px;
             }
             
             .action-buttons {
-                order: 4;
+                order: 5;
                 width: 100%;
                 justify-content: space-around;
             }
@@ -657,8 +692,61 @@
             justify-content: flex-end;
         }
         
-        .has-memo {
-            position: relative;
+        .running-popup {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 999;
+            min-width: 300px;
+        }
+        
+        .running-popup.show {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .running-popup-info {
+            flex: 1;
+        }
+        
+        .running-popup-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .running-popup-time {
+            font-size: 20px;
+            font-family: monospace;
+            color: #10b981;
+        }
+        
+        .running-popup-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ef4444;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        
+        .running-popup-btn:hover {
+            transform: scale(1.1);
+            background: #dc2626;
         }
         
         .task-name, .estimate {
@@ -772,6 +860,15 @@
         </div>
     </div>
 
+    <!-- 実行中タスクのポップアップ -->
+    <div class="running-popup" id="running-popup">
+        <div class="running-popup-info">
+            <div class="running-popup-title" id="running-popup-title">タスク名</div>
+            <div class="running-popup-time" id="running-popup-time">0:00:00</div>
+        </div>
+        <button class="running-popup-btn" onclick="stopRunningTask()">◼</button>
+    </div>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -800,6 +897,7 @@
         let currentUser = localStorage.getItem('timeTrackerUser');
         let editingFields = {}; // 複数の編集状態を管理
         let currentStatsTab = '全体'; // 統計タブの状態
+        let currentRunningTaskId = null; // 実行中のタスクID
         
         // ユーザー識別
         if (!currentUser) {
@@ -833,6 +931,7 @@
                 }
                 renderTasks();
                 updateTotals();
+                updateRunningPopup();
             });
             
         } catch (error) {
@@ -923,7 +1022,7 @@
                 return;
             }
             
-            const task = {
+                const task = {
                 assignee: '',
                 name: name,
                 estimate: estimate,
@@ -933,6 +1032,7 @@
                 isCompleted: false,
                 startedBy: '',
                 memoHistory: [],
+                lastStarted: 0,  // 最後に開始した時刻
                 createdAt: Date.now()
             };
             
@@ -975,6 +1075,49 @@
             }
         }
 
+        function updateRunningPopup() {
+            const popup = document.getElementById('running-popup');
+            const runningTask = tasks.find(t => t.isRunning && t.startedBy === currentUser);
+            
+            if (runningTask) {
+                currentRunningTaskId = runningTask.id;
+                document.getElementById('running-popup-title').textContent = runningTask.name;
+                popup.classList.add('show');
+                
+                // 時間の更新
+                const updateTime = () => {
+                    const task = tasks.find(t => t.id === currentRunningTaskId);
+                    if (task && task.isRunning) {
+                        const seconds = task.actualSeconds || 0;
+                        const h = Math.floor(seconds / 3600);
+                        const m = Math.floor((seconds % 3600) / 60);
+                        const s = seconds % 60;
+                        document.getElementById('running-popup-time').textContent = 
+                            `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                    }
+                };
+                
+                updateTime();
+                // 1秒ごとに更新
+                if (!popup.updateInterval) {
+                    popup.updateInterval = setInterval(updateTime, 1000);
+                }
+            } else {
+                currentRunningTaskId = null;
+                popup.classList.remove('show');
+                if (popup.updateInterval) {
+                    clearInterval(popup.updateInterval);
+                    popup.updateInterval = null;
+                }
+            }
+        }
+        
+        function stopRunningTask() {
+            if (currentRunningTaskId) {
+                toggleTimer(currentRunningTaskId);
+            }
+        }
+
         function toggleTimer(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
@@ -1007,12 +1150,14 @@
                     tasksRef.child(taskId).update({
                         isRunning: true,
                         startTime: startTime,
-                        startedBy: currentUser
+                        startedBy: currentUser,
+                        lastStarted: Date.now()
                     });
                 } else {
                     task.isRunning = true;
                     task.startTime = startTime;
                     task.startedBy = currentUser;
+                    task.lastStarted = Date.now();
                 }
                 
                 timerIntervals[taskId] = setInterval(() => {
@@ -1036,6 +1181,8 @@
             if (!isFirebaseConnected) {
                 renderTasks();
             }
+            
+            updateRunningPopup();
         }
 
         function completeTask(taskId) {
@@ -1211,15 +1358,22 @@
                 }
             });
             
-            // ソート: 実行中 → 未完了 → 完了
+            // ソート: 実行中 → 最近開始 → 未完了 → 完了
             const sortedTasks = [...tasks].sort((a, b) => {
                 // 実行中のタスクを最優先
                 if (a.isRunning && !b.isRunning) return -1;
                 if (!a.isRunning && b.isRunning) return 1;
                 
                 // 次に完了状態でソート
-                if (a.isCompleted === b.isCompleted) return 0;
-                return a.isCompleted ? 1 : -1;
+                if (!a.isCompleted && b.isCompleted) return -1;
+                if (a.isCompleted && !b.isCompleted) return 1;
+                
+                // 未完了タスクは最後に開始した順
+                if (!a.isCompleted && !b.isCompleted) {
+                    return (b.lastStarted || 0) - (a.lastStarted || 0);
+                }
+                
+                return 0;
             });
             
             sortedTasks.forEach(task => {
@@ -1292,7 +1446,9 @@
                     <button class="icon-btn" 
                             onclick="if(confirm('本当に削除しますか？'))deleteTask('${task.id}')"
                             title="削除">
-                        ×
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
+                        </svg>
                     </button>
                     </div>
                 `;
@@ -1341,6 +1497,7 @@
             });
             
             updateTotals();
+            updateRunningPopup();
         }
 
         // 初期化
