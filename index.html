@@ -84,6 +84,10 @@
         }
         
         @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+            
             .container {
                 padding: 15px;
                 border-radius: 0;
@@ -109,17 +113,15 @@
                 font-size: 20px;
             }
             
-            @media (max-width: 768px) {
-                .stats-tabs {
-                    overflow-x: auto;
-                    white-space: nowrap;
-                    -webkit-overflow-scrolling: touch;
-                }
-                
-                .stats-tab {
-                    font-size: 13px;
-                    padding: 6px 12px;
-                }
+            .stats-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .stats-tab {
+                font-size: 13px;
+                padding: 6px 12px;
             }
             
             input[type="text"] {
@@ -273,11 +275,12 @@
             margin-top: 20px;
         }
         
+        /* デスクトップ版のタスクアイテム（2行レイアウト） */
         .task-item {
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 15px;
+            padding: 12px 15px;
             background: #f8f9fa;
             border-radius: 8px;
             margin-bottom: 10px;
@@ -308,6 +311,7 @@
             background: white;
             padding: 2px 8px;
             border-radius: 10px;
+            z-index: 1;
         }
         
         .task-item.completed::after {
@@ -362,9 +366,34 @@
             background: #F5F5F5;
         }
         
+        .task-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+        
+        .task-row-1 {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            padding-right: 60px; /* 実行中タグ用のスペース確保 */
+        }
+        
         .task-name {
             flex: 1;
             font-weight: 500;
+            white-space: normal;
+            word-break: break-word;
+        }
+        
+        .task-row-2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
         }
         
         .assignee-buttons {
@@ -410,7 +439,9 @@
             color: #28a745;
             font-weight: bold;
             font-family: monospace;
-            font-size: 16px;
+            font-size: 14px;
+            min-width: 140px;
+            text-align: right;
         }
         
         .action-buttons {
@@ -443,7 +474,7 @@
         }
         
         .icon-btn.play {
-            padding-left: 3px; /* 再生ボタンの三角を中央に調整 */
+            padding-left: 3px;
         }
         
         .icon-btn:hover {
@@ -494,6 +525,7 @@
             height: 16px;
         }
         
+        /* スマホ版のタスクレイアウト */
         @media (max-width: 768px) {
             .running-popup {
                 bottom: 20px;
@@ -503,19 +535,33 @@
                 min-width: auto;
             }
             
+            /* スマホでは折り返し可能なレイアウトに */
             .task-item {
                 flex-wrap: wrap;
                 gap: 10px;
+                padding: 12px;
+            }
+            
+            .task-content {
+                display: contents; /* 2行レイアウトを無効化 */
             }
             
             .assignee-badge {
                 order: 1;
             }
             
+            .task-row-1 {
+                display: contents; /* 行構造を解除 */
+            }
+            
             .task-name {
                 order: 2;
                 flex: 1;
                 min-width: calc(100% - 60px);
+            }
+            
+            .task-row-2 {
+                display: contents; /* 行構造を解除 */
             }
             
             .assignee-buttons {
@@ -533,6 +579,42 @@
                 order: 5;
                 width: 100%;
                 justify-content: space-around;
+            }
+            
+            .icon-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            
+            .icon-btn.play, .icon-btn.pause {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+            
+            /* カレンダーのモバイル最適化 */
+            .calendar-day {
+                min-height: 60px;
+                padding: 4px;
+            }
+            
+            .day-number {
+                font-size: 12px;
+                margin-bottom: 2px;
+            }
+            
+            .time-summary {
+                padding: 2px 4px;
+                font-size: 9px;
+            }
+            
+            .time-value {
+                font-size: 10px;
+            }
+            
+            .task-count {
+                display: none;
             }
         }
         
@@ -660,12 +742,47 @@
             color: #FB6103;
             margin-bottom: 5px;
             font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .memo-toggle-btn {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+            color: #666;
+        }
+        
+        .memo-toggle-btn:hover {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+        
+        .memo-toggle-btn.restore {
+            background: #e8f5e9;
+            border-color: #10b981;
+            color: #10b981;
         }
         
         .memo-entry-text {
             color: #333;
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+        
+        .memo-entry.crossed .memo-entry-text {
+            text-decoration: line-through;
+            opacity: 0.6;
         }
         
         .memo-input {
@@ -834,7 +951,7 @@
         }
         
         .calendar-container.show {
-            max-height: 1000px;
+            max-height: 2000px;
             padding: 20px;
         }
         
@@ -1062,26 +1179,111 @@
             color: #10b981;
         }
         
-        .day-tasks-list {
+        /* 日詳細のタスクリスト（折りたたみ式） */
+        .day-tasks-section {
             background: #f8f9fa;
-            padding: 15px;
             border-radius: 6px;
+            overflow: hidden;
         }
         
-        .day-tasks-list h4 {
+        .day-tasks-toggle {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-size: 14px;
-            margin-bottom: 10px;
-            color: #2c3e50;
+            color: #333;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .day-tasks-toggle:hover {
+            background: #f3f4f6;
+        }
+        
+        .day-tasks-toggle .toggle-icon {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        
+        .day-tasks-toggle.expanded .toggle-icon {
+            transform: rotate(90deg);
+        }
+        
+        .day-tasks-count {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .day-tasks-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 15px;
+        }
+        
+        .day-tasks-list.show {
+            max-height: 2000px;
+            padding: 0 15px 15px;
         }
         
         .day-task-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
+            align-items: center;
+            padding: 10px;
             background: white;
             border-radius: 4px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             border-left: 3px solid #e5e7eb;
+            position: relative;
+        }
+        
+        .day-task-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .day-task-name {
+            flex: 1;
+        }
+        
+        .day-task-name.cancelled {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        
+        .day-task-memo-btn {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+            transition: all 0.2s;
+        }
+        
+        .day-task-memo-btn:hover {
+            background: #f5f5f5;
+            border-color: #d1d5db;
+        }
+        
+        .day-task-memo-btn.has-memo {
+            background: #333;
+            color: white;
+            border-color: #333;
         }
         
         .day-task-item.cow {
@@ -1261,8 +1463,16 @@
                         </div>
                     </div>
                     
-                    <div class="day-tasks-list" id="day-tasks-list">
-                        <!-- タスク一覧は動的に生成 -->
+                    <!-- 日詳細のタスクリスト（折りたたみ式） -->
+                    <div class="day-tasks-section">
+                        <button class="day-tasks-toggle" onclick="toggleDayTasks()">
+                            <span class="toggle-icon">▶</span>
+                            <span>完了タスク一覧</span>
+                            <span class="day-tasks-count" id="day-tasks-count">(0)</span>
+                        </button>
+                        <div class="day-tasks-list" id="day-tasks-list">
+                            <!-- タスク一覧は動的に生成 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1379,13 +1589,49 @@
         let timerIntervals = {};
         let currentMemoTaskId = null;
         let currentUser = localStorage.getItem('timeTrackerUser');
-        let editingFields = {}; // 複数の編集状態を管理
-        let currentStatsTab = '全体'; // 統計タブの状態
-        let currentRunningTaskId = null; // 実行中のタスクID
-        let currentMonth = new Date(); // カレンダーの現在表示月
-        let selectedDate = null; // 選択中の日付
-        let currentPeriod = 'today'; // 現在の期間フィルター
-        let isCompletedExpanded = false; // 完了タスクの展開状態
+        let editingFields = {};
+        let currentStatsTab = '全体';
+        let currentRunningTaskId = null;
+        let currentMonth = new Date();
+        let selectedDate = null;
+        let currentPeriod = 'today';
+        let isCompletedExpanded = false;
+        let isDayTasksExpanded = false; // 日詳細タスクの展開状態
+        
+        // グローバル関数として定義
+        window.toggleMemoCross = function(memoIndex) {
+            if (!currentMemoTaskId) return;
+            
+            const task = tasks.find(t => t.id === currentMemoTaskId);
+            if (!task || !task.memoHistory || !task.memoHistory[memoIndex]) return;
+            
+            task.memoHistory[memoIndex].crossed = !task.memoHistory[memoIndex].crossed;
+            
+            renderMemoHistory(task.memoHistory);
+            renderTasks();
+            
+            if (isFirebaseConnected) {
+                tasksRef.child(currentMemoTaskId).update({
+                    memoHistory: task.memoHistory
+                });
+            }
+        };
+        
+        // 日詳細タスクの折りたたみ切り替え
+        window.toggleDayTasks = function() {
+            const container = document.getElementById('day-tasks-list');
+            const toggle = document.querySelector('.day-tasks-toggle');
+            
+            isDayTasksExpanded = !isDayTasksExpanded;
+            
+            if (isDayTasksExpanded) {
+                container.classList.add('show');
+                toggle.classList.add('expanded');
+            } else {
+                container.classList.remove('show');
+                toggle.classList.remove('expanded');
+            }
+        };
         
         // ユーザー識別
         if (!currentUser) {
@@ -1455,7 +1701,6 @@
             const rh = Math.floor(remainingMs / (1000 * 60 * 60));
             const rm = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
             
-            // 時間表示を統一フォーマットに
             let remainingText = '';
             if (rh > 0 && rm > 0) {
                 remainingText = `${rh}時間${rm}分`;
@@ -1485,7 +1730,6 @@
             currentStatsTab = tab;
             updateTotals();
             
-            // タブのアクティブ状態を更新
             document.querySelectorAll('.stats-tab').forEach(el => {
                 el.classList.toggle('active', el.textContent === tab);
             });
@@ -1497,7 +1741,6 @@
         }
         
         function isTaskInPeriod(task) {
-            // 未完了タスクはcreatedAtで判定、完了タスクはcompletedAtで判定
             const taskDate = task.completedAt ? new Date(task.completedAt) : 
                            task.createdAt ? new Date(task.createdAt) : null;
             
@@ -1560,7 +1803,7 @@
                 return;
             }
             
-                const task = {
+            const task = {
                 assignee: '',
                 name: name,
                 estimate: estimate,
@@ -1570,9 +1813,9 @@
                 isCompleted: false,
                 startedBy: '',
                 memoHistory: [],
-                lastStarted: 0,  // 最後に開始した時刻
+                lastStarted: 0,
                 createdAt: Date.now(),
-                completedAt: null  // 完了時刻を追加
+                completedAt: null
             };
             
             if (isFirebaseConnected) {
@@ -1623,7 +1866,6 @@
                 document.getElementById('running-popup-title').textContent = runningTask.name;
                 popup.classList.add('show');
                 
-                // 時間の更新
                 const updateTime = () => {
                     const task = tasks.find(t => t.id === currentRunningTaskId);
                     if (task && task.isRunning) {
@@ -1637,7 +1879,6 @@
                 };
                 
                 updateTime();
-                // 1秒ごとに更新
                 if (!popup.updateInterval) {
                     popup.updateInterval = setInterval(updateTime, 1000);
                 }
@@ -1745,7 +1986,6 @@
                 renderTasks();
             }
             
-            // カレンダーの更新
             updateMonthCompletedCount();
             renderCalendar();
         }
@@ -1792,14 +2032,23 @@
                 return;
             }
             
-            historyEl.innerHTML = history.map(entry => `
-                <div class="memo-entry">
-                    <div class="memo-entry-header">${entry.author} (${new Date(entry.timestamp).toLocaleString('ja-JP')})</div>
+            const scrollPos = historyEl.scrollTop;
+            
+            historyEl.innerHTML = history.map((entry, index) => `
+                <div class="memo-entry ${entry.crossed ? 'crossed' : ''}" data-index="${index}">
+                    <div class="memo-entry-header">
+                        <span>${entry.author} (${new Date(entry.timestamp).toLocaleString('ja-JP')})</span>
+                        <button class="memo-toggle-btn ${entry.crossed ? 'restore' : ''}" 
+                                onclick="toggleMemoCross(${index})"
+                                title="${entry.crossed ? '復元' : '取り消し'}">
+                            ${entry.crossed ? '○' : '×'}
+                        </button>
+                    </div>
                     <div class="memo-entry-text">${escapeHtml(entry.text)}</div>
                 </div>
             `).join('');
             
-            historyEl.scrollTop = historyEl.scrollHeight;
+            historyEl.scrollTop = scrollPos;
         }
 
         function escapeHtml(text) {
@@ -1832,7 +2081,6 @@
                 timestamp: Date.now()
             };
             
-            // 即座に画面に反映
             task.memoHistory.push(newEntry);
             renderMemoHistory(task.memoHistory);
             
@@ -1871,10 +2119,10 @@
             let value;
             if (field === 'name') {
                 value = input.value.trim();
-                if (!value) return; // 空の場合は保存しない
+                if (!value) return;
             } else if (field === 'estimate') {
                 value = parseInt(input.value);
-                if (!value || value < 1) return; // 無効な値は保存しない
+                if (!value || value < 1) return;
             }
             
             if (isFirebaseConnected) {
@@ -1922,37 +2170,28 @@
                 }
             });
             
-            // タスクを未完了と完了に分ける
             const incompleteTasks = tasks.filter(t => !t.isCompleted);
-            // completedAtがあるタスクのみ表示（タイムスタンプなしは除外）
             const completedTasks = tasks.filter(t => t.isCompleted && t.completedAt);
             
-            // 未完了タスクのソート: 実行中 → 最後に触った順（作成または開始の新しい順）
             const sortedIncompleteTasks = [...incompleteTasks].sort((a, b) => {
-                // 1. 実行中のタスクを最優先
                 if (a.isRunning && !b.isRunning) return -1;
                 if (!a.isRunning && b.isRunning) return 1;
                 
-                // 2. 最後に触った時刻（作成または開始）の新しい順
                 const aLastTouched = Math.max(a.lastStarted || 0, a.createdAt || 0);
                 const bLastTouched = Math.max(b.lastStarted || 0, b.createdAt || 0);
                 return bLastTouched - aLastTouched;
             });
             
-            // 完了タスクのソート: 完了日時の新しい順
             const sortedCompletedTasks = [...completedTasks].sort((a, b) => {
                 return (b.completedAt || b.createdAt || 0) - (a.completedAt || a.createdAt || 0);
             });
             
-            // 完了タスク数の更新
             document.getElementById('completed-count').textContent = `(${completedTasks.length})`;
             
-            // 未完了タスクのレンダリング
             sortedIncompleteTasks.forEach(task => {
                 renderTaskItem(task, taskList);
             });
             
-            // 完了タスクのレンダリング
             sortedCompletedTasks.forEach(task => {
                 renderTaskItem(task, completedTasksContainer);
             });
@@ -1976,65 +2215,71 @@
             
             taskEl.innerHTML = `
                 <div class="assignee-badge ${assigneeClass}">${task.assignee || '?'}</div>
-                <div class="task-name" ondblclick="startEdit('${task.id}', 'name')">
-                    ${isEditingName ? 
-                        `<input type="text" id="edit-name-${task.id}" class="task-name-input" value="${task.name}" 
-                                onkeypress="if(event.key==='Enter')saveEdit('${task.id}','name')"
-                                onkeydown="if(event.key==='Escape')cancelEdit('${task.id}','name')"
-                                onblur="saveEdit('${task.id}','name')">` : 
-                        task.name
-                    }
-                </div>
-                <div class="assignee-buttons">
-                    <button class="assignee-btn ${task.assignee === '未定' ? 'selected' : ''}" 
-                            onclick="assignTask('${task.id}', '未定')"
-                            ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>未定</button>
-                    <button class="assignee-btn ${task.assignee === 'cow' ? 'selected' : ''}" 
-                            onclick="assignTask('${task.id}', 'cow')"
-                            ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>cow</button>
-                    <button class="assignee-btn ${task.assignee === 'uta' ? 'selected' : ''}" 
-                            onclick="assignTask('${task.id}', 'uta')"
-                            ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>uta</button>
-                </div>
-                <div class="task-times">
-                    <span class="estimate" ondblclick="startEdit('${task.id}', 'estimate')">
-                        見積: ${isEditingEstimate ? 
-                            `<input type="number" id="edit-estimate-${task.id}" class="task-estimate-input" value="${task.estimate}" min="1"
-                                    onkeypress="if(event.key==='Enter')saveEdit('${task.id}','estimate')"
-                                    onkeydown="if(event.key==='Escape')cancelEdit('${task.id}','estimate')"
-                                    onblur="saveEdit('${task.id}','estimate')">分` : 
-                            `${task.estimate}分`
-                        }
-                    </span>
-                    <span class="actual" id="actual-${task.id}">実績: ${formatTime(task.actualSeconds || 0)}</span>
-                    ${(task.actualSeconds || 0) > 0 ? `<span class="diff ${diffClass}">${diffText}</span>` : ''}
-                </div>
-                <div class="action-buttons">
-                    ${!task.isCompleted ? `
-                        <button class="icon-btn ${task.isRunning ? 'pause' : 'play'}" 
-                            onclick="toggleTimer('${task.id}')"
-                            title="${task.isRunning ? '停止' : '開始'}"
-                            ${task.isRunning && task.startedBy && task.startedBy !== currentUser ? 'disabled' : ''}>
-                        ${task.isRunning ? '◼' : '▶'}
-                    </button>
-                ` : ''}
-                <button class="icon-btn ${task.memoHistory && task.memoHistory.length > 0 ? 'has-memo' : ''}" 
-                        onclick="openMemo('${task.id}')"
-                        title="メモ">
-                    ✎
-                </button>
-                <button class="icon-btn" 
-                        onclick="completeTask('${task.id}')"
-                        title="${task.isCompleted ? '戻す' : '完了'}">
-                    ${task.isCompleted ? '↺' : '✓'}
-                </button>
-                <button class="icon-btn" 
-                        onclick="if(confirm('本当に削除しますか？'))deleteTask('${task.id}')"
-                        title="削除">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
-                    </svg>
-                </button>
+                <div class="task-content">
+                    <div class="task-row-1">
+                        <div class="task-name" ondblclick="startEdit('${task.id}', 'name')">
+                            ${isEditingName ? 
+                                `<input type="text" id="edit-name-${task.id}" class="task-name-input" value="${task.name}" 
+                                        onkeypress="if(event.key==='Enter')saveEdit('${task.id}','name')"
+                                        onkeydown="if(event.key==='Escape')cancelEdit('${task.id}','name')"
+                                        onblur="saveEdit('${task.id}','name')">` : 
+                                task.name
+                            }
+                        </div>
+                        <div class="task-times">
+                            <span class="estimate" ondblclick="startEdit('${task.id}', 'estimate')">
+                                見積: ${isEditingEstimate ? 
+                                    `<input type="number" id="edit-estimate-${task.id}" class="task-estimate-input" value="${task.estimate}" min="1"
+                                            onkeypress="if(event.key==='Enter')saveEdit('${task.id}','estimate')"
+                                            onkeydown="if(event.key==='Escape')cancelEdit('${task.id}','estimate')"
+                                            onblur="saveEdit('${task.id}','estimate')">分` : 
+                                    `${task.estimate}分`
+                                }
+                            </span>
+                            <span class="actual" id="actual-${task.id}">実績: ${formatTime(task.actualSeconds || 0)}</span>
+                            ${(task.actualSeconds || 0) > 0 ? `<span class="diff ${diffClass}">${diffText}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="task-row-2">
+                        <div class="assignee-buttons">
+                            <button class="assignee-btn ${task.assignee === '未定' ? 'selected' : ''}" 
+                                    onclick="assignTask('${task.id}', '未定')"
+                                    ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>未定</button>
+                            <button class="assignee-btn ${task.assignee === 'cow' ? 'selected' : ''}" 
+                                    onclick="assignTask('${task.id}', 'cow')"
+                                    ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>cow</button>
+                            <button class="assignee-btn ${task.assignee === 'uta' ? 'selected' : ''}" 
+                                    onclick="assignTask('${task.id}', 'uta')"
+                                    ${task.isCompleted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>uta</button>
+                        </div>
+                        <div class="action-buttons">
+                            ${!task.isCompleted ? `
+                                <button class="icon-btn ${task.isRunning ? 'pause' : 'play'}" 
+                                    onclick="toggleTimer('${task.id}')"
+                                    title="${task.isRunning ? '停止' : '開始'}"
+                                    ${task.isRunning && task.startedBy && task.startedBy !== currentUser ? 'disabled' : ''}>
+                                ${task.isRunning ? '◼' : '▶'}
+                            </button>
+                        ` : ''}
+                        <button class="icon-btn ${task.memoHistory && task.memoHistory.filter(m => !m.crossed).length > 0 ? 'has-memo' : ''}" 
+                                onclick="openMemo('${task.id}')"
+                                title="メモ">
+                            ✎
+                        </button>
+                        <button class="icon-btn" 
+                                onclick="completeTask('${task.id}')"
+                                title="${task.isCompleted ? '戻す' : '完了'}">
+                            ${task.isCompleted ? '↺' : '✓'}
+                        </button>
+                        <button class="icon-btn" 
+                                onclick="if(confirm('本当に削除しますか？'))deleteTask('${task.id}')"
+                                title="削除">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
+                            </svg>
+                        </button>
+                        </div>
+                    </div>
                 </div>
             `;
             
@@ -2052,22 +2297,23 @@
                             actualEl.textContent = `実績: ${formatTime(newSeconds)}`;
                         }
                         
-                        // 差分の更新も必要
+                        // 差分の更新
                         const diffMinutes = Math.floor(newSeconds / 60) - currentTask.estimate;
-                        const diffClass = diffMinutes > 0 ? 'over' : 'under';
-                        const diffText = diffMinutes > 0 ? `+${diffMinutes}分` : `${diffMinutes}分`;
+                        const taskItemEl = actualEl ? actualEl.closest('.task-item') : null;
                         
-                        // 差分表示の更新（DOM操作を最小限に）
-                        const taskItemEl = actualEl.closest('.task-item');
                         if (taskItemEl) {
-                            const diffEl = taskItemEl.querySelector('.diff');
-                            if (diffEl || newSeconds > 0) {
-                                const timesEl = taskItemEl.querySelector('.task-times');
-                                let diffHtml = `<span class="diff ${diffClass}">${diffText}</span>`;
+                            const timesEl = taskItemEl.querySelector('.task-times');
+                            let diffEl = timesEl ? timesEl.querySelector('.diff') : null;
+                            
+                            if (newSeconds > 0 && timesEl) {
+                                const diffClass = diffMinutes > 0 ? 'over' : 'under';
+                                const diffText = diffMinutes > 0 ? `+${diffMinutes}分` : `${diffMinutes}分`;
+                                
                                 if (diffEl) {
                                     diffEl.className = `diff ${diffClass}`;
                                     diffEl.textContent = diffText;
-                                } else if (timesEl) {
+                                } else {
+                                    const diffHtml = `<span class="diff ${diffClass}">${diffText}</span>`;
                                     timesEl.insertAdjacentHTML('beforeend', diffHtml);
                                 }
                             }
@@ -2113,15 +2359,12 @@
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
             
-            // 月表示の更新
             document.getElementById('current-month').textContent = 
                 `${year}年${month + 1}月`;
             
-            // カレンダーグリッドのクリア
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
             
-            // 曜日ヘッダー
             const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
             weekdays.forEach(day => {
                 const header = document.createElement('div');
@@ -2130,24 +2373,20 @@
                 grid.appendChild(header);
             });
             
-            // 月の最初の日と最後の日を取得
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const prevLastDay = new Date(year, month, 0);
             
-            // 前月の日付を埋める
             const firstDayOfWeek = firstDay.getDay();
             for (let i = firstDayOfWeek - 1; i >= 0; i--) {
                 const day = prevLastDay.getDate() - i;
                 createCalendarDay(new Date(year, month - 1, day), true);
             }
             
-            // 当月の日付
             for (let day = 1; day <= lastDay.getDate(); day++) {
                 createCalendarDay(new Date(year, month, day), false);
             }
             
-            // 次月の日付を埋める
             const remainingDays = 42 - (firstDayOfWeek + lastDay.getDate());
             for (let day = 1; day <= remainingDays; day++) {
                 createCalendarDay(new Date(year, month + 1, day), true);
@@ -2162,25 +2401,21 @@
                 dayEl.classList.add('other-month');
             }
             
-            // 今日かどうかチェック
             const today = new Date();
             if (date.toDateString() === today.toDateString()) {
                 dayEl.classList.add('today');
             }
             
-            // 日付番号
             const dayNumber = document.createElement('div');
             dayNumber.className = 'day-number';
             dayNumber.textContent = date.getDate();
             dayEl.appendChild(dayNumber);
             
-            // その日のタスクを取得
             const dayTasks = getTasksForDate(date);
             if (dayTasks.length > 0) {
                 const content = document.createElement('div');
                 content.className = 'day-content';
                 
-                // 時間集計
                 const summary = document.createElement('div');
                 summary.className = 'time-summary';
                 
@@ -2204,7 +2439,6 @@
                 dayEl.appendChild(content);
             }
             
-            // クリックイベント
             dayEl.addEventListener('click', () => selectDate(date));
             
             document.getElementById('calendar-grid').appendChild(dayEl);
@@ -2220,16 +2454,13 @@
         }
         
         function selectDate(date) {
-            // 既存の選択をクリア
             document.querySelectorAll('.calendar-day').forEach(day => {
                 day.classList.remove('selected');
             });
             
-            // 新しい日付を選択
             selectedDate = date;
             event.currentTarget.classList.add('selected');
             
-            // 詳細パネルを表示
             showDayDetail(date);
         }
         
@@ -2237,7 +2468,6 @@
             const dayTasks = getTasksForDate(date);
             const detail = document.getElementById('day-detail');
             
-            // 日付の更新
             const dateStr = date.toLocaleDateString('ja-JP', {
                 year: 'numeric',
                 month: 'long',
@@ -2246,10 +2476,8 @@
             });
             document.getElementById('detail-date').textContent = dateStr;
             
-            // 統計の更新
             document.getElementById('day-completed-count').textContent = dayTasks.length;
             
-            // 時間集計
             let totalMinutes = 0;
             let cowMinutes = 0;
             let utaMinutes = 0;
@@ -2269,29 +2497,50 @@
             document.getElementById('day-cow-time').textContent = formatMinutesToTimeShort(cowMinutes);
             document.getElementById('day-uta-time').textContent = formatMinutesToTimeShort(utaMinutes);
             
+            // タスク数を更新
+            document.getElementById('day-tasks-count').textContent = `(${dayTasks.length})`;
+            
             // タスク一覧の更新
             const tasksList = document.getElementById('day-tasks-list');
+            tasksList.innerHTML = '';
+            
             if (dayTasks.length > 0) {
-                tasksList.innerHTML = '<h4>完了タスク一覧</h4>';
                 dayTasks.forEach(task => {
                     const taskItem = document.createElement('div');
                     taskItem.className = `day-task-item ${task.assignee || ''}`;
                     
+                    const taskInfo = document.createElement('div');
+                    taskInfo.className = 'day-task-info';
+                    
                     const taskName = document.createElement('span');
+                    taskName.className = 'day-task-name';
                     taskName.textContent = task.name;
+                    
+                    const memoBtn = document.createElement('button');
+                    memoBtn.className = `day-task-memo-btn ${task.memoHistory && task.memoHistory.filter(m => !m.crossed).length > 0 ? 'has-memo' : ''}`;
+                    memoBtn.onclick = () => openMemo(task.id);
+                    memoBtn.textContent = '✎';
+                    memoBtn.title = 'メモを見る';
                     
                     const taskTime = document.createElement('span');
                     taskTime.className = 'day-task-time';
                     const minutes = Math.floor((task.actualSeconds || 0) / 60);
                     taskTime.textContent = `${formatMinutesToTimeShort(minutes)} / ${task.assignee || '未定'}`;
                     
-                    taskItem.appendChild(taskName);
+                    taskInfo.appendChild(taskName);
+                    taskInfo.appendChild(memoBtn);
+                    taskItem.appendChild(taskInfo);
                     taskItem.appendChild(taskTime);
                     tasksList.appendChild(taskItem);
                 });
             } else {
-                tasksList.innerHTML = '<p style="text-align: center; color: #999;">この日の完了タスクはありません</p>';
+                tasksList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">この日の完了タスクはありません</p>';
             }
+            
+            // タスクリストの折りたたみをリセット
+            isDayTasksExpanded = false;
+            document.querySelector('.day-tasks-toggle').classList.remove('expanded');
+            tasksList.classList.remove('show');
             
             detail.classList.add('show');
         }
@@ -2336,14 +2585,12 @@
         // PWAインストールプロンプト
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            // 自動プロンプトを防ぐ
             e.preventDefault();
             deferredPrompt = e;
         });
         
-        // Service Worker登録（オプション：オフライン対応用）
+        // Service Worker登録
         if ('serviceWorker' in navigator) {
-            // 簡易的なService Workerをインラインで作成
             const sw = `
                 self.addEventListener('fetch', function(event) {
                     event.respondWith(fetch(event.request));
@@ -2367,6 +2614,9 @@
                 addMemo();
             }
         });
+        
+        // レスポンシブ対応のためリサイズイベントを監視
+        // リサイズ時の再レンダリングは不要（CSSで対応）
     </script>
 </body>
 </html>
