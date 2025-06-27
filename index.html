@@ -371,9 +371,14 @@
             background: #EDE7F6;
         }
         
-        .task-item.running.unassigned {
-            border-color: #9E9E9E;
-            background: #F5F5F5;
+        .task-item.overdue {
+            background: #fee;
+            border-color: #fcc;
+        }
+        
+        .task-item.overdue.running {
+            background: #fee;
+            border-color: #fcc;
         }
         
         .task-content {
@@ -1335,7 +1340,158 @@
             border-color: #333;
         }
         
-        /* 完了タスクセクション */
+        /* 日付選択モーダル */
+        .date-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .date-modal.show {
+            display: flex;
+        }
+        
+        .date-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 320px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .date-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .date-modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .date-input-container {
+            margin-bottom: 15px;
+        }
+        
+        .date-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .mini-calendar {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .mini-calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        
+        .mini-calendar-nav {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: #666;
+        }
+        
+        .mini-calendar-nav:hover {
+            background: #e5e7eb;
+            color: #333;
+        }
+        
+        .mini-calendar-month {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .mini-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        
+        .mini-calendar-weekday {
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            background: #f8f9fa;
+        }
+        
+        .mini-calendar-day {
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .mini-calendar-day:hover {
+            background: #f5f5f5;
+        }
+        
+        .mini-calendar-day.other-month {
+            color: #ccc;
+        }
+        
+        .mini-calendar-day.selected {
+            background: #333;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .mini-calendar-day.today {
+            color: #FB6103;
+            font-weight: 600;
+        }
+        
+        .date-modal-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .date-modal-actions button.clear {
+            margin-right: auto;
+            background: #dc3545;
+        }
+        
+        .date-modal-actions button.clear:hover {
+            background: #c82333;
+        }
         .completed-section {
             margin-top: 30px;
         }
@@ -1394,7 +1550,7 @@
         }
         
         .completed-tasks.show {
-            max-height: 2000px;
+            max-height: none;
             padding: 10px;
         }
     </style>
@@ -1573,6 +1729,37 @@
         <button class="running-popup-btn" onclick="stopRunningTask()">◼</button>
     </div>
 
+    <!-- 日付選択モーダル -->
+    <div class="date-modal" id="date-modal">
+        <div class="date-modal-content">
+            <div class="date-modal-header">
+                <h3>予定日を選択</h3>
+                <button class="close-btn" onclick="closeDatePicker()">×</button>
+            </div>
+            
+            <div class="date-input-container">
+                <input type="date" id="date-input" class="date-input" onchange="onDateInputChange()">
+            </div>
+            
+            <div class="mini-calendar">
+                <div class="mini-calendar-header">
+                    <button class="mini-calendar-nav" onclick="changeMiniMonth(-1)">◀</button>
+                    <span class="mini-calendar-month" id="mini-calendar-month">2025年1月</span>
+                    <button class="mini-calendar-nav" onclick="changeMiniMonth(1)">▶</button>
+                </div>
+                <div class="mini-calendar-grid" id="mini-calendar-grid">
+                    <!-- カレンダーは動的に生成 -->
+                </div>
+            </div>
+            
+            <div class="date-modal-actions">
+                <button class="clear" onclick="clearScheduledDate()">予定日を<br>クリア</button>
+                <button onclick="closeDatePicker()">キャンセル</button>
+                <button onclick="saveScheduledDate()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -1606,7 +1793,8 @@
         let selectedDate = null;
         let currentPeriod = 'today';
         let isCompletedExpanded = false;
-        let isDayTasksExpanded = false; // 日詳細タスクの展開状態
+        let isDayTasksExpanded = false;
+        let currentDatePickerTaskId = null; // 日付選択中のタスクID
         
         // グローバル関数として定義
         window.toggleMemoCross = function(memoIndex) {
@@ -1641,6 +1829,215 @@
                 container.classList.remove('show');
                 toggle.classList.remove('expanded');
             }
+        };
+        
+        // 日付選択関連の関数
+        window.openDatePicker = function(taskId) {
+            currentDatePickerTaskId = taskId;
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const modal = document.getElementById('date-modal');
+            const dateInput = document.getElementById('date-input');
+            
+            // 既存の予定日があれば設定
+            if (task.scheduledDate) {
+                const date = new Date(task.scheduledDate);
+                // ローカル時間で日付文字列を作成
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}`;
+                selectedDatePickerDate = date;
+            } else {
+                dateInput.value = '';
+                selectedDatePickerDate = new Date();
+            }
+            
+            renderMiniCalendar();
+            modal.classList.add('show');
+        };
+        
+        window.closeDatePicker = function() {
+            document.getElementById('date-modal').classList.remove('show');
+            currentDatePickerTaskId = null;
+        };
+        
+        window.onDateInputChange = function() {
+            const dateInput = document.getElementById('date-input');
+            if (dateInput.value) {
+                // ローカル時間として扱う
+                const [year, month, day] = dateInput.value.split('-');
+                selectedDatePickerDate = new Date(year, month - 1, day);
+                renderMiniCalendar();
+            }
+        };
+        
+        window.changeMiniMonth = function(direction) {
+            miniCalendarMonth.setMonth(miniCalendarMonth.getMonth() + direction);
+            renderMiniCalendar();
+        };
+        
+        window.selectMiniCalendarDate = function(date) {
+            selectedDatePickerDate = date;
+            const dateInput = document.getElementById('date-input');
+            // ローカル時間で日付文字列を作成
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            dateInput.value = `${year}-${month}-${day}`;
+            renderMiniCalendar();
+        };
+        
+        window.saveScheduledDate = function() {
+            if (!currentDatePickerTaskId || !selectedDatePickerDate) return;
+            
+            // ローカル時間の0時0分0秒として保存
+            const localDate = new Date(
+                selectedDatePickerDate.getFullYear(),
+                selectedDatePickerDate.getMonth(),
+                selectedDatePickerDate.getDate(),
+                0, 0, 0, 0
+            );
+            
+            if (isFirebaseConnected) {
+                tasksRef.child(currentDatePickerTaskId).update({
+                    scheduledDate: localDate.toISOString()
+                });
+            } else {
+                const task = tasks.find(t => t.id === currentDatePickerTaskId);
+                if (task) {
+                    task.scheduledDate = localDate.toISOString();
+                    renderTasks();
+                    updateTotals();
+                }
+            }
+            
+            closeDatePicker();
+        };
+        
+        window.clearScheduledDate = function() {
+            if (!currentDatePickerTaskId) return;
+            
+            if (isFirebaseConnected) {
+                tasksRef.child(currentDatePickerTaskId).update({
+                    scheduledDate: null
+                });
+            } else {
+                const task = tasks.find(t => t.id === currentDatePickerTaskId);
+                if (task) {
+                    task.scheduledDate = null;
+                    renderTasks();
+                    updateTotals();
+                }
+            }
+            
+            closeDatePicker();
+        };
+        
+        let miniCalendarMonth = new Date();
+        let selectedDatePickerDate = new Date();
+        
+        function renderMiniCalendar() {
+            const year = miniCalendarMonth.getFullYear();
+            const month = miniCalendarMonth.getMonth();
+            
+            document.getElementById('mini-calendar-month').textContent = 
+                `${year}年${month + 1}月`;
+            
+            const grid = document.getElementById('mini-calendar-grid');
+            grid.innerHTML = '';
+            
+            // 曜日ヘッダー
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            weekdays.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'mini-calendar-weekday';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+            
+            // 日付
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const prevLastDay = new Date(year, month, 0);
+            
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // 前月の日付
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const day = prevLastDay.getDate() - i;
+                createMiniCalendarDay(new Date(year, month - 1, day), true);
+            }
+            
+            // 当月の日付
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                createMiniCalendarDay(new Date(year, month, day), false);
+            }
+            
+            // 次月の日付
+            const remainingDays = 42 - (firstDayOfWeek + lastDay.getDate());
+            for (let day = 1; day <= remainingDays; day++) {
+                createMiniCalendarDay(new Date(year, month + 1, day), true);
+            }
+        }
+        
+        function createMiniCalendarDay(date, isOtherMonth) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'mini-calendar-day';
+            
+            if (isOtherMonth) {
+                dayEl.classList.add('other-month');
+            }
+            
+            const today = new Date();
+            if (date.toDateString() === today.toDateString()) {
+                dayEl.classList.add('today');
+            }
+            
+            if (selectedDatePickerDate && date.toDateString() === selectedDatePickerDate.toDateString()) {
+                dayEl.classList.add('selected');
+            }
+            
+            dayEl.textContent = date.getDate();
+            dayEl.onclick = () => selectMiniCalendarDate(date);
+            
+            document.getElementById('mini-calendar-grid').appendChild(dayEl);
+        }
+        
+        // 一時的なデバッグ関数（問題解決後は削除）
+        window.debugTaskPeriod = function() {
+            console.log('=== 今日のタスク診断 ===');
+            const today = new Date().toDateString();
+            let totalEstimate = 0;
+            let totalActual = 0;
+            
+            tasks.forEach(task => {
+                // 判定に使う日付を決定
+                let useDate = null;
+                let reason = '';
+                
+                if (task.scheduledDate) {
+                    useDate = new Date(task.scheduledDate);
+                    reason = 'scheduledDate';
+                } else if (task.createdAt) {
+                    useDate = typeof task.createdAt === 'number' 
+                        ? new Date(task.createdAt) 
+                        : new Date(task.createdAt);
+                    reason = 'createdAt';
+                }
+                
+                if (useDate && useDate.toDateString() === today && !task.isCompleted) {
+                    totalEstimate += task.estimate || 0;
+                    totalActual += task.actualSeconds || 0;
+                    console.log(`✓ ${task.name}: 見積${task.estimate}分 (${reason})`);
+                }
+            });
+            
+            console.log(`見積合計: ${totalEstimate}分`);
+            console.log(`実績合計: ${Math.floor(totalActual / 60)}分`);
+            console.log(`画面の見積表示: ${document.getElementById('total-estimate').textContent}`);
+            console.log(`画面の実績表示: ${document.getElementById('total-actual').textContent}`);
         };
         
         // ユーザー識別
@@ -1751,7 +2148,8 @@
         }
         
         function isTaskInPeriod(task) {
-            const taskDate = task.completedAt ? new Date(task.completedAt) : 
+            // scheduledDateを最優先で使用
+            const taskDate = task.scheduledDate ? new Date(task.scheduledDate) : 
                            task.createdAt ? new Date(task.createdAt) : null;
             
             if (!taskDate) return false;
@@ -1825,7 +2223,8 @@
                 memoHistory: [],
                 lastStarted: 0,
                 createdAt: Date.now(),
-                completedAt: null
+                completedAt: null,
+                scheduledDate: null  // 予定日を追加
             };
             
             if (isFirebaseConnected) {
@@ -1941,13 +2340,13 @@
                         isRunning: true,
                         startTime: startTime,
                         startedBy: currentUser,
-                        lastStarted: Date.now()
+                        lastStarted: new Date().toISOString()
                     });
                 } else {
                     task.isRunning = true;
                     task.startTime = startTime;
                     task.startedBy = currentUser;
-                    task.lastStarted = Date.now();
+                    task.lastStarted = new Date().toISOString();
                 }
                 
                 timerIntervals[taskId] = setInterval(() => {
@@ -1983,7 +2382,7 @@
                 toggleTimer(taskId);
             }
             
-            const completedAt = task.isCompleted ? null : Date.now();
+            const completedAt = task.isCompleted ? null : new Date().toISOString();
             
             if (isFirebaseConnected) {
                 tasksRef.child(taskId).update({
@@ -2187,16 +2586,43 @@
                 if (a.isRunning && !b.isRunning) return -1;
                 if (!a.isRunning && b.isRunning) return 1;
                 
-                const aLastTouched = Math.max(a.lastStarted || 0, a.createdAt || 0);
-                const bLastTouched = Math.max(b.lastStarted || 0, b.createdAt || 0);
+                // 数値とISO文字列の両方に対応
+                const getTimestamp = (dateValue) => {
+                    if (!dateValue) return 0;
+                    if (typeof dateValue === 'number') return dateValue;
+                    return new Date(dateValue).getTime() || 0;
+                };
+                
+                const aLastTouched = Math.max(
+                    getTimestamp(a.lastStarted),
+                    getTimestamp(a.createdAt)
+                );
+                const bLastTouched = Math.max(
+                    getTimestamp(b.lastStarted),
+                    getTimestamp(b.createdAt)
+                );
+                
                 return bLastTouched - aLastTouched;
             });
             
-            const sortedCompletedTasks = [...completedTasks].sort((a, b) => {
-                return (b.completedAt || b.createdAt || 0) - (a.completedAt || a.createdAt || 0);
-            });
+            // 完了タスクのフィルタリング: 今日完了したタスクのみ
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
-            document.getElementById('completed-count').textContent = `(${completedTasks.length})`;
+            const sortedCompletedTasks = [...completedTasks]
+                .filter(task => {
+                    if (!task.completedAt) return false;
+                    
+                    const completedDate = new Date(task.completedAt);
+                    completedDate.setHours(0, 0, 0, 0);
+                    
+                    return completedDate.getTime() === today.getTime();
+                })
+                .sort((a, b) => {
+                    return (b.completedAt || b.createdAt || 0) - (a.completedAt || a.createdAt || 0);
+                });
+            
+            document.getElementById('completed-count').textContent = `(${sortedCompletedTasks.length})`;
             
             sortedIncompleteTasks.forEach(task => {
                 renderTaskItem(task, taskList);
@@ -2214,7 +2640,18 @@
             const taskEl = document.createElement('div');
             const assigneeClass = task.assignee === 'cow' ? 'cow' : 
                                 task.assignee === 'uta' ? 'uta' : 'unassigned';
-            taskEl.className = `task-item ${task.isRunning ? 'running ' + assigneeClass : ''} ${task.isCompleted ? 'completed' : ''}`;
+            
+            // 期限切れチェック
+            let isOverdue = false;
+            if (task.scheduledDate && !task.isCompleted) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const scheduledDate = new Date(task.scheduledDate);
+                scheduledDate.setHours(0, 0, 0, 0);
+                isOverdue = scheduledDate < today;
+            }
+            
+            taskEl.className = `task-item ${task.isRunning ? 'running ' + assigneeClass : ''} ${task.isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}`;
             
             const diffMinutes = Math.floor((task.actualSeconds || 0) / 60) - task.estimate;
             const diffClass = diffMinutes > 0 ? 'over' : 'under';
@@ -2222,6 +2659,11 @@
             
             const isEditingName = editingFields[`${task.id}-name`];
             const isEditingEstimate = editingFields[`${task.id}-estimate`];
+            
+            // 予定日の表示文字列
+            const dateDisplay = task.scheduledDate ? 
+                new Date(task.scheduledDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : 
+                '';
             
             taskEl.innerHTML = `
                 <div class="assignee-badge ${assigneeClass}">${task.assignee || '?'}</div>
@@ -2235,6 +2677,7 @@
                                         onblur="saveEdit('${task.id}','name')">` : 
                                 task.name
                             }
+                            ${dateDisplay ? `<span style="color: #999; font-size: 12px; margin-left: 8px;">(${dateDisplay})</span>` : ''}
                         </div>
                         <div class="task-times">
                             <span class="estimate" ondblclick="startEdit('${task.id}', 'estimate')">
@@ -2286,6 +2729,16 @@
                                 title="削除">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
+                            </svg>
+                        </button>
+                        <button class="icon-btn" 
+                                onclick="openDatePicker('${task.id}')"
+                                title="予定日設定">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
                         </button>
                         </div>
@@ -2457,9 +2910,16 @@
         function getTasksForDate(date) {
             const dateStr = date.toDateString();
             return tasks.filter(task => {
-                if (!task.completedAt || !task.isCompleted) return false;
-                const taskDate = new Date(task.completedAt).toDateString();
-                return taskDate === dateStr;
+                if (!task.isCompleted) return false;
+                
+                // completedAtがあればそれを優先、なければscheduledDateを使用
+                const taskDateStr = task.completedAt ? 
+                    new Date(task.completedAt).toDateString() :
+                    task.scheduledDate ? 
+                        new Date(task.scheduledDate).toDateString() : 
+                        null;
+                
+                return taskDateStr === dateStr;
             });
         }
         
@@ -2572,15 +3032,26 @@
         }
         
         function updateMonthCompletedCount() {
-            const year = currentMonth.getFullYear();
-            const month = currentMonth.getMonth();
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
             const monthStart = new Date(year, month, 1);
             const monthEnd = new Date(year, month + 1, 0);
             
             const monthCompleted = tasks.filter(task => {
-                if (!task.completedAt || !task.isCompleted) return false;
-                const completedDate = new Date(task.completedAt);
-                return completedDate >= monthStart && completedDate <= monthEnd;
+                if (!task.isCompleted) return false;
+                
+                // completedAtまたはscheduledDateで判定
+                let taskDate = null;
+                if (task.completedAt) {
+                    taskDate = new Date(task.completedAt);
+                } else if (task.scheduledDate) {
+                    taskDate = new Date(task.scheduledDate);
+                } else {
+                    return false;
+                }
+                
+                return taskDate >= monthStart && taskDate <= monthEnd;
             }).length;
             
             document.getElementById('month-completed').textContent = monthCompleted;
