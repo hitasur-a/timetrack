@@ -1553,6 +1553,105 @@
             max-height: none;
             padding: 10px;
         }
+        /* 通知ポップアップ */
+        .notification-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1001;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification-popup.show {
+            display: block;
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .notification-icon {
+            font-size: 24px;
+            animation: ring 1s ease-in-out infinite;
+        }
+
+        @keyframes ring {
+            0%, 100% { transform: rotate(0deg); }
+            10% { transform: rotate(-10deg); }
+            20% { transform: rotate(10deg); }
+            30% { transform: rotate(-10deg); }
+            40% { transform: rotate(10deg); }
+            50% { transform: rotate(0deg); }
+        }
+
+        .notification-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .notification-task-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            opacity: 0.9;
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .notification-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 通知ポップアップのモバイル対応 */
+        @media (max-width: 768px) {
+            .notification-popup {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1760,6 +1859,21 @@
         </div>
     </div>
 
+    <!-- 通知ポップアップ -->
+    <div class="notification-popup" id="notification-popup">
+        <button class="notification-close" onclick="closeNotification()">×</button>
+        <div class="notification-header">
+            <span class="notification-icon">🔔</span>
+            <span>見積時間の半分が経過しました！</span>
+        </div>
+        <div class="notification-content">
+            <div class="notification-task-name" id="notification-task-name">タスク名</div>
+            <div class="notification-time" id="notification-time">
+                見積: 30分 / 実績: 15分
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -1795,6 +1909,9 @@
         let isCompletedExpanded = false;
         let isDayTasksExpanded = false;
         let currentDatePickerTaskId = null; // 日付選択中のタスクID
+        let notifiedTasks = {}; // 通知済みタスクを記録
+        let audioContext = null; // 音声用のコンテキスト
+        let isAudioInitialized = false;
         
         // グローバル関数として定義
         window.toggleMemoCross = function(memoIndex) {
@@ -2040,6 +2157,116 @@
             console.log(`画面の実績表示: ${document.getElementById('total-actual').textContent}`);
         };
         
+        // ==========================================
+        // 通知関連の関数
+        // ==========================================
+
+        // ブラウザ通知の権限をリクエスト
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // 音声の初期化（ユーザー操作後に実行）
+        function initAudio() {
+            if (!isAudioInitialized) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                isAudioInitialized = true;
+            }
+        }
+
+        // 通知音を鳴らす
+        function playNotificationSound() {
+            if (!audioContext) return;
+            
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // 通知音のパターン（ピンポン音）
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (error) {
+                console.error('Sound playback error:', error);
+            }
+        }
+
+        // 50%達成の通知を表示
+        function showHalfwayNotification(task) {
+            const notificationKey = `${task.id}-halfway`;
+            
+            // すでに通知済みなら何もしない
+            if (notifiedTasks[notificationKey]) return;
+            
+            notifiedTasks[notificationKey] = true;
+            
+            // 画面内ポップアップ表示
+            const popup = document.getElementById('notification-popup');
+            const taskNameEl = document.getElementById('notification-task-name');
+            const timeEl = document.getElementById('notification-time');
+            
+            taskNameEl.textContent = task.name;
+            const minutes = Math.floor(task.actualSeconds / 60);
+            timeEl.textContent = `見積: ${task.estimate}分 / 実績: ${minutes}分`;
+            
+            popup.classList.add('show');
+            
+            // 音声通知
+            playNotificationSound();
+            
+            // ブラウザ通知
+           // ブラウザ通知
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notification = new Notification('⏱️ 見積時間の半分が経過しました', {
+                    body: `${task.name}\n見積: ${task.estimate}分 / 実績: ${minutes}分`,
+                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiNGQjYxMDMiLz4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNMzIgMjBWMzJMNDAgNDAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==',
+                    tag: `task-${task.id}`,
+                    requireInteraction: true,
+                    silent: false,  // ← これを追加（システム通知音を鳴らす）
+                    vibrate: [200, 100, 200]  // ← これも追加（スマホでバイブ）
+                });
+                
+                // 通知クリックでフォーカス
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+            }
+            
+            // 10秒後に自動で閉じる
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 10000);
+        }
+
+        // 通知を閉じる
+        window.closeNotification = function() {
+            document.getElementById('notification-popup').classList.remove('show');
+        };
+
+        // タスクの進捗をチェック
+        function checkTaskProgress(task) {
+            if (!task.isRunning || !task.estimate) return;
+            
+            const halfwaySeconds = (task.estimate * 60) / 2;
+            const actualSeconds = task.actualSeconds || 0;
+            
+            // 50%を超えたタイミングで通知
+            if (actualSeconds >= halfwaySeconds && actualSeconds < halfwaySeconds + 5) {
+                showHalfwayNotification(task);
+            }
+        }
+
         // ユーザー識別
         if (!currentUser) {
             currentUser = prompt('あなたの名前を入力してください（cow または uta）:');
@@ -2358,6 +2585,8 @@
                         const actualEl = document.querySelector(`#actual-${taskId}`);
                         if (actualEl) {
                             actualEl.textContent = formatTime(newSeconds);
+                            // 進捗チェック（50%通知）
+                            checkTaskProgress(currentTask);
                         }
                         
                         if (isFirebaseConnected && newSeconds % 5 === 0) {
@@ -2381,9 +2610,14 @@
             if (task.isRunning) {
                 toggleTimer(taskId);
             }
-            
             const completedAt = task.isCompleted ? null : new Date().toISOString();
-            
+
+            // 完了状態を切り替える時、通知履歴をクリア
+            if (!task.isCompleted) {
+                // タスクを完了にする場合
+                const notificationKey = `${taskId}-halfway`;
+                delete notifiedTasks[notificationKey];
+            }
             if (isFirebaseConnected) {
                 tasksRef.child(taskId).update({
                     isCompleted: !task.isCompleted,
@@ -2758,6 +2992,8 @@
                         const actualEl = document.querySelector(`#actual-${task.id}`);
                         if (actualEl) {
                             actualEl.textContent = `実績: ${formatTime(newSeconds)}`;
+                            // 進捗チェック（50%通知）
+                            checkTaskProgress(currentTask);
                         }
                         
                         // 差分の更新
@@ -3063,6 +3299,12 @@
         setInterval(updateClock, 1000);
         updateMonthCompletedCount();
         
+        // 通知権限をリクエスト
+        requestNotificationPermission();
+
+        // ユーザー操作で音声を初期化
+        document.addEventListener('click', initAudio, { once: true });
+
         // PWAインストールプロンプト
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
